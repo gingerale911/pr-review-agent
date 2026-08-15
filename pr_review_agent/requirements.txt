@@ -1,6 +1,5 @@
 langgraph
 langchain
-langchain-anthropic
 PyGithub
 python-dotenv
 pytest

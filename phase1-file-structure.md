@@ -28,7 +28,6 @@ pr_review_agent/
 ```
 langgraph
 langchain
-langchain-anthropic
 PyGithub
 python-dotenv
 ```
@@ -39,7 +38,7 @@ python-dotenv
 
 ```bash
 GITHUB_TOKEN=ghp_...
-ANTHROPIC_API_KEY=sk-ant-...
+AI_STUDIO_API_KEY=sk-...
 ```
 
 ---

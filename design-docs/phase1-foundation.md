@@ -436,4 +436,4 @@ print(result["final_review"])
 - [ ] Security subgraph on sensitive diffs
 - [ ] `read_cross_ref` for dynamic file expansion
 - [ ] End-to-end test on a real PR
-- [ ] `.env`: `GITHUB_TOKEN`, `ANTHROPIC_API_KEY`
+- [ ] `.env`: `GITHUB_TOKEN`, `AI_STUDIO_API_KEY`
