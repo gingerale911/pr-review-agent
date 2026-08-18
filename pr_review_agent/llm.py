@@ -1,6 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
+from pr_review_agent.logging_utils import log_action
 
 load_dotenv()
 
@@ -23,7 +24,7 @@ class GeminiClient:
     the rest of the codebase which calls `model.invoke([HumanMessage(...)])`.
     """
 
-    def __init__(self, api_key: str, model: str = AI_STUDIO_MODEL, timeout: int = 15):
+    def __init__(self, api_key: str, model: str = AI_STUDIO_MODEL, timeout: int = 45):
         self.api_key = api_key
         self.model = model
         self.timeout = timeout
@@ -84,12 +85,14 @@ class GeminiClient:
                 "parts": [{"text": prompt}]
             }]
         }
+        log_action("tool", "LLM API call", f"model={self.model} url={url}")
 
         resp = self._requests.post(url, json=body, timeout=self.timeout)
         try:
             data = resp.json()
         except Exception:
             data = {"error": resp.text}
+        log_action("tool", "LLM API response", f"status={getattr(resp, 'status_code', 'unknown')} payload_keys={list(data.keys())[:10] if isinstance(data, dict) else type(data).__name__}")
 
         text = self._choose_text_from_response(data)
         return SimpleResponse(text)

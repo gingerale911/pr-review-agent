@@ -3,6 +3,7 @@ from langchain_core.messages import HumanMessage
 from typing import Dict
 from pr_review_agent.state import PRState
 from pr_review_agent.llm import model
+from pr_review_agent.logging_utils import log_action
 
 DECISION_PROMPT = """\
 You are orchestrating a PR review.
@@ -25,7 +26,9 @@ Respond ONLY in JSON:
 
 
 def decide_next_action(state: PRState) -> Dict:
+    log_action("decide_next_action", "evaluate next action")
     if state.get("iteration", 0) >= 3:
+        log_action("decide_next_action", "iteration limit reached", "next_action=synthesize")
         return {"next_action": "synthesize"}
 
     files_read = (
@@ -44,11 +47,13 @@ def decide_next_action(state: PRState) -> Dict:
     try:
         result = json.loads(response.content)
     except Exception:
-        # fallback: synthesize
+        log_action("decide_next_action", "fallback decision", "next_action=synthesize")
         return {"next_action": "synthesize", "iteration": state.get("iteration", 0) + 1}
 
+    chosen = result["action"]
+    log_action("decide_next_action", "decision made", f"action={chosen}; reason={result.get('reason', '')}")
     return {
-        "next_action": result["action"],
+        "next_action": chosen,
         "cross_ref_files": result.get("files_to_read", []),
         "iteration": state.get("iteration", 0) + 1,
         "observations": [f"Decision: {result.get('reason', '')}"],
