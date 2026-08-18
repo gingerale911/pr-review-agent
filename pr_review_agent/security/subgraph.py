@@ -15,6 +15,7 @@ SECURITY_CHECKS = [
 def security_scan(state: PRState) -> Dict:
     findings = []
     for filename, diff in state.get("diff_by_file", {}).items():
+        # Intentional reproduction for issue #1: mixed f-string and .format() on same prompt.
         response = model.invoke([HumanMessage(content=f"""\
 Security review of this diff.
 
