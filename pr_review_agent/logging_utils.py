@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 
 OUTPUT_PATH = Path(__file__).resolve().parents[1] / "output.txt"
@@ -13,6 +14,16 @@ if not logger.handlers:
     logger.addHandler(handler)
 
 
+def redact_secrets(value: str) -> str:
+    if not isinstance(value, str):
+        return value
+
+    redacted = re.sub(r"(key=)([^&\s]+)", r"\1[REDACTED]", value, flags=re.IGNORECASE)
+    redacted = re.sub(r"(token=)([^&\s]+)", r"\1[REDACTED]", redacted, flags=re.IGNORECASE)
+    redacted = re.sub(r"(Authorization:\s*Bearer\s+)([^\s]+)", r"\1[REDACTED]", redacted, flags=re.IGNORECASE)
+    return redacted
+
+
 def reset_log():
     with open(OUTPUT_PATH, "w", encoding="utf-8") as handle:
         handle.write("")
@@ -22,16 +33,16 @@ def reset_log():
 def log_action(node_name: str, action: str, details: str = ""):
     message = f"node {node_name} - action: {action}"
     if details:
-        message = f"{message}\n{details}"
-    logger.info(message)
+        message = f"{message}\n{redact_secrets(details)}"
+    logger.info(redact_secrets(message))
 
 
 def log_transition(from_node: str, to_node: str):
-    logger.info(f"node {from_node} - action: complete")
-    logger.info(f"--create node {to_node}---")
-    logger.info(f"--move to node {to_node} --")
+    logger.info(redact_secrets(f"node {from_node} - action: complete"))
+    logger.info(redact_secrets(f"--create node {to_node}---"))
+    logger.info(redact_secrets(f"--move to node {to_node} --"))
 
 
 def log_final_review(review: str):
     logger.info("\n=== FINAL LLM REVIEW ===")
-    logger.info(review)
+    logger.info(redact_secrets(review))
